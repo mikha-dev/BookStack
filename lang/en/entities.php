@@ -80,8 +80,8 @@ return [
     'search_update' => 'Update Search',
 
     // Shelves
-    'shelf' => 'Shelf',
-    'shelves' => 'Shelves',
+    'shelf' => 'Product',
+    'shelves' => 'Products',
     'x_shelves' => ':count Shelf|:count Shelves',
     'shelves_empty' => 'No shelves have been created',
     'shelves_create' => 'Create New Shelf',
@@ -113,8 +113,8 @@ return [
     'shelves_copy_permission_success' => 'Shelf permissions copied to :count books',
 
     // Books
-    'book' => 'Book',
-    'books' => 'Books',
+    'book' => 'Article',
+    'books' => 'Articles',
     'x_books' => ':count Book|:count Books',
     'books_empty' => 'No books have been created',
     'books_popular' => 'Popular Books',
