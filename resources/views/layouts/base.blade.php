@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ config('app.lang') }}"
-      dir="{{ config('app.rtl') ? 'rtl' : 'ltr' }}"
+<html lang="{{ isset($locale) ? $locale->htmlLang() : config('app.default_locale') }}"
+      dir="{{ isset($locale) ? $locale->htmlDirection() : 'auto' }}"
       class="{{ setting()->getForCurrentUser('dark-mode-enabled') ? 'dark-mode ' : '' }}">
 <head>
     <title>{{ isset($pageTitle) ? $pageTitle . ' | ' : '' }}{{ setting('app-name') }}</title>
@@ -32,8 +32,8 @@
     @yield('head')
 
     <!-- Custom Styles & Head Content -->
-    @include('common.custom-styles')
-    @include('common.custom-head')
+    @include('layouts.parts.custom-styles')
+    @include('layouts.parts.custom-head')
 
     @stack('head')
 
@@ -48,15 +48,15 @@
       class="@stack('body-class')">
 
     @include('layouts.parts.base-body-start')
-    @include('common.skip-to-content')
-    @include('common.notifications')
-    @include('common.header')
+    @include('layouts.parts.skip-to-content')
+    @include('layouts.parts.notifications')
+    @include('layouts.parts.header')
 
     <div id="content" components="@yield('content-components')" class="block">
         @yield('content')
     </div>
 
-    @include('common.footer')
+    @include('layouts.parts.footer')
 
     <div component="back-to-top" class="back-to-top print-hidden">
         <div class="inner">
@@ -65,7 +65,9 @@
     </div>
 
     @yield('bottom')
-    <script src="{{ versioned_asset('dist/app.js') }}" nonce="{{ $cspNonce }}"></script>
+    @if($cspNonce ?? false)
+        <script src="{{ versioned_asset('dist/app.js') }}" nonce="{{ $cspNonce }}"></script>
+    @endif
     @yield('scripts')
 
     @include('layouts.parts.base-body-end')
