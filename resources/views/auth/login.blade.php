@@ -33,5 +33,6 @@
             @endif
         </div>
     </div>
+    <a href="http://funded.local/register?ref=aa8ad251-a4ff-4ea8-9764-c4069bfcfb37">Test</a>
 
 @stop

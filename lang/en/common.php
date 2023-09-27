@@ -46,6 +46,8 @@ return [
     'fullscreen' => 'Fullscreen',
     'favourite' => 'Favourite',
     'unfavourite' => 'Unfavourite',
+    'publish' => 'Publish',
+    'unpublish' => 'Unpublish',    
     'next' => 'Next',
     'previous' => 'Previous',
     'filter_active' => 'Active Filter:',

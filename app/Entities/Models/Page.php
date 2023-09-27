@@ -56,6 +56,29 @@ class Page extends BookChild
         return parent::scopeVisible($query);
     }
 
+    public function scopePublic(Builder $query): Builder
+    {
+        return $query->where('is_public', 1);
+    }    
+
+    public function isPublic() : bool {
+        return $this->is_public;
+    }
+
+    public function publish() : Page {
+        $this->is_public = 1;
+        $this->save();
+
+        return $this;
+    }
+
+    public function unpublish() : Page {
+        $this->is_public = 0;
+        $this->save();
+
+        return  $this;
+    }
+
     /**
      * Get the chapter that this page is in, If applicable.
      *

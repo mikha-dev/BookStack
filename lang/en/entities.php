@@ -5,6 +5,8 @@
  */
 return [
 
+    'published' => 'Published',
+    'unpublished' => 'Unpublished',
     // Shared
     'recently_created' => 'Recently Created',
     'recently_created_pages' => 'Recently Created Pages',

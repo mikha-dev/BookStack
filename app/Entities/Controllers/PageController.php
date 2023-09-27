@@ -137,7 +137,6 @@ class PageController extends Controller
         $pageContent = (new PageContent($page));
         $page->html = $pageContent->render();
         $pageNav = $pageContent->getNavigation($page->html);
-
         $sidebarTree = (new BookContents($page->book))->getTree();
         $commentTree = (new CommentTree($page));
         $nextPreviousLocator = new NextPreviousContentLocator($page, $sidebarTree);

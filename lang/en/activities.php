@@ -54,6 +54,10 @@ return [
     'revision_delete' => 'deleted revision',
     'revision_delete_notification' => 'Revision successfully deleted',
 
+    // Publish
+    'published_notification' => '":name" has been published',
+    'unpublish_notification' => '":name" has been unpublished',
+
     // Favourites
     'favourite_add_notification' => '":name" has been added to your favourites',
     'favourite_remove_notification' => '":name" has been removed from your favourites',

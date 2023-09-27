@@ -189,6 +189,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/templates', [EntityControllers\PageTemplateController::class, 'list']);
     Route::get('/templates/{templateId}', [EntityControllers\PageTemplateController::class, 'get']);
 
+    // Publish
+    Route::post('/publish/publish', [ActivityControllers\PublishController::class, 'publish']);
+    Route::post('/publish/unpublish', [ActivityControllers\PublishController::class, 'unpublish']);
+
     // Favourites
     Route::get('/favourites', [ActivityControllers\FavouriteController::class, 'index']);
     Route::post('/favourites/add', [ActivityControllers\FavouriteController::class, 'add']);
