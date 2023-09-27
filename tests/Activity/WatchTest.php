@@ -2,12 +2,17 @@
 
 namespace Tests\Activity;
 
+use BookStack\Activity\ActivityType;
+use BookStack\Activity\Models\Comment;
+use BookStack\Activity\Notifications\Messages\BaseActivityNotification;
 use BookStack\Activity\Notifications\Messages\CommentCreationNotification;
 use BookStack\Activity\Notifications\Messages\PageCreationNotification;
 use BookStack\Activity\Notifications\Messages\PageUpdateNotification;
+use BookStack\Activity\Tools\ActivityLogger;
 use BookStack\Activity\Tools\UserEntityWatchOptions;
 use BookStack\Activity\WatchLevels;
 use BookStack\Entities\Models\Entity;
+use BookStack\Entities\Tools\TrashCan;
 use BookStack\Settings\UserNotificationPreferences;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -61,7 +66,7 @@ class WatchTest extends TestCase
 
         $this->actingAs($editor)->get($book->getUrl());
         $resp = $this->put('/watching/update', [
-            'type' => get_class($book),
+            'type' => $book->getMorphClass(),
             'id' => $book->id,
             'level' => 'comments'
         ]);
@@ -76,7 +81,7 @@ class WatchTest extends TestCase
         ]);
 
         $resp = $this->put('/watching/update', [
-            'type' => get_class($book),
+            'type' => $book->getMorphClass(),
             'id' => $book->id,
             'level' => 'default'
         ]);
@@ -96,7 +101,7 @@ class WatchTest extends TestCase
         $book = $this->entities->book();
 
         $resp = $this->put('/watching/update', [
-            'type' => get_class($book),
+            'type' => $book->getMorphClass(),
             'id' => $book->id,
             'level' => 'comments'
         ]);
@@ -205,16 +210,22 @@ class WatchTest extends TestCase
         $prefs = new UserNotificationPreferences($editor);
         $prefs->updateFromSettingsArray(['comment-replies' => 'true']);
 
+        // Create some existing comments to pad IDs to help potentially error
+        // on mis-identification of parent via ids used.
+        Comment::factory()->count(5)
+            ->for($entities['page'], 'entity')
+            ->create(['created_by' => $this->users->admin()->id]);
+
         $notifications = Notification::fake();
 
         $this->actingAs($editor)->post("/comment/{$entities['page']->id}", [
             'text' => 'My new comment'
         ]);
-        $comment = $entities['page']->comments()->first();
+        $comment = $entities['page']->comments()->orderBy('id', 'desc')->first();
 
         $this->asAdmin()->post("/comment/{$entities['page']->id}", [
             'text' => 'My new comment response',
-            'parent_id' => $comment->id,
+            'parent_id' => $comment->local_id,
         ]);
         $notifications->assertSentTo($editor, CommentCreationNotification::class);
     }
@@ -253,7 +264,7 @@ class WatchTest extends TestCase
 
         $notifications->assertSentTo($editor, function (CommentCreationNotification $notification) use ($editor, $admin, $entities) {
             $mail = $notification->toMail($editor);
-            $mailContent = html_entity_decode(strip_tags($mail->render()));
+            $mailContent = html_entity_decode(strip_tags($mail->render()), ENT_QUOTES);
             return $mail->subject === 'New comment on page: ' . $entities['page']->getShortName()
                 && str_contains($mailContent, 'View Comment')
                 && str_contains($mailContent, 'Page Name: ' . $entities['page']->name)
@@ -276,7 +287,7 @@ class WatchTest extends TestCase
 
         $notifications->assertSentTo($editor, function (PageUpdateNotification $notification) use ($editor, $admin) {
             $mail = $notification->toMail($editor);
-            $mailContent = html_entity_decode(strip_tags($mail->render()));
+            $mailContent = html_entity_decode(strip_tags($mail->render()), ENT_QUOTES);
             return $mail->subject === 'Updated page: Updated page'
                 && str_contains($mailContent, 'View Page')
                 && str_contains($mailContent, 'Page Name: Updated page')
@@ -305,12 +316,49 @@ class WatchTest extends TestCase
 
         $notifications->assertSentTo($editor, function (PageCreationNotification $notification) use ($editor, $admin) {
             $mail = $notification->toMail($editor);
-            $mailContent = html_entity_decode(strip_tags($mail->render()));
+            $mailContent = html_entity_decode(strip_tags($mail->render()), ENT_QUOTES);
             return $mail->subject === 'New page: My new page'
                 && str_contains($mailContent, 'View Page')
                 && str_contains($mailContent, 'Page Name: My new page')
                 && str_contains($mailContent, 'Created By: ' . $admin->name);
         });
+    }
+
+    public function test_notifications_sent_in_right_language()
+    {
+        $editor = $this->users->editor();
+        $admin = $this->users->admin();
+        setting()->putUser($editor, 'language', 'de');
+        $entities = $this->entities->createChainBelongingToUser($editor);
+        $watches = new UserEntityWatchOptions($editor, $entities['book']);
+        $watches->updateLevelByValue(WatchLevels::COMMENTS);
+
+        $activities = [
+            ActivityType::PAGE_CREATE => $entities['page'],
+            ActivityType::PAGE_UPDATE => $entities['page'],
+            ActivityType::COMMENT_CREATE => (new Comment([]))->forceFill(['entity_id' => $entities['page']->id, 'entity_type' => $entities['page']->getMorphClass()]),
+        ];
+
+        $notifications = Notification::fake();
+        $logger = app()->make(ActivityLogger::class);
+        $this->actingAs($admin);
+
+        foreach ($activities as $activityType => $detail) {
+            $logger->add($activityType, $detail);
+        }
+
+        $sent = $notifications->sentNotifications()[get_class($editor)][$editor->id];
+        $this->assertCount(3, $sent);
+
+        foreach ($sent as $notificationInfo) {
+            $notification = $notificationInfo[0]['notification'];
+            $this->assertInstanceOf(BaseActivityNotification::class, $notification);
+            $mail = $notification->toMail($editor);
+            $mailContent = html_entity_decode(strip_tags($mail->render()), ENT_QUOTES);
+            $this->assertStringContainsString('Name der Seite:', $mailContent);
+            $this->assertStringContainsString('Diese Benachrichtigung wurde', $mailContent);
+            $this->assertStringContainsString('Sollte es beim Anklicken der Schaltfläche', $mailContent);
+        }
     }
 
     public function test_notifications_not_sent_if_lacking_view_permission_for_related_item()
@@ -328,5 +376,33 @@ class WatchTest extends TestCase
         ])->assertOk();
 
         $notifications->assertNothingSentTo($editor);
+    }
+
+    public function test_watches_deleted_on_user_delete()
+    {
+        $editor = $this->users->editor();
+        $page = $this->entities->page();
+
+        $watches = new UserEntityWatchOptions($editor, $page);
+        $watches->updateLevelByValue(WatchLevels::COMMENTS);
+        $this->assertDatabaseHas('watches', ['user_id' => $editor->id]);
+
+        $this->asAdmin()->delete($editor->getEditUrl());
+
+        $this->assertDatabaseMissing('watches', ['user_id' => $editor->id]);
+    }
+
+    public function test_watches_deleted_on_item_delete()
+    {
+        $editor = $this->users->editor();
+        $page = $this->entities->page();
+
+        $watches = new UserEntityWatchOptions($editor, $page);
+        $watches->updateLevelByValue(WatchLevels::COMMENTS);
+        $this->assertDatabaseHas('watches', ['watchable_type' => 'page', 'watchable_id' => $page->id]);
+
+        $this->entities->destroy($page);
+
+        $this->assertDatabaseMissing('watches', ['watchable_type' => 'page', 'watchable_id' => $page->id]);
     }
 }

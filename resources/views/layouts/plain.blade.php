@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ config('app.lang') }}"
-      dir="{{ config('app.rtl') ? 'rtl' : 'ltr' }}"
+<html lang="{{ isset($locale) ? $locale->htmlLang() : config('app.default_locale') }}"
+      dir="{{ isset($locale) ? $locale->htmlDirection() : 'auto' }}"
       class="@yield('document-class')">
 <head>
     <title>{{ isset($pageTitle) ? $pageTitle . ' | ' : '' }}{{ setting('app-name') }}</title>
@@ -14,8 +14,8 @@
     <link rel="stylesheet" media="print" href="{{ versioned_asset('dist/print-styles.css') }}">
 
     <!-- Custom Styles & Head Content -->
-    @include('common.custom-styles')
-    @include('common.custom-head')
+    @include('layouts.parts.custom-styles')
+    @include('layouts.parts.custom-head')
 </head>
 <body>
     @yield('content')

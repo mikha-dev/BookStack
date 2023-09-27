@@ -124,6 +124,23 @@ class UserPreferencesTest extends TestCase
         $resp->assertDontSee('All Page Updates & Comments');
     }
 
+    public function test_notification_preferences_dont_error_on_deleted_items()
+    {
+        $editor = $this->users->editor();
+        $book = $this->entities->book();
+
+        $options = new UserEntityWatchOptions($editor, $book);
+        $options->updateLevelByValue(WatchLevels::COMMENTS);
+
+        $this->actingAs($editor)->delete($book->getUrl());
+        $book->refresh();
+        $this->assertNotNull($book->deleted_at);
+
+        $resp = $this->actingAs($editor)->get('/preferences/notifications');
+        $resp->assertOk();
+        $resp->assertDontSee($book->name);
+    }
+
     public function test_notification_preferences_not_accessible_to_guest()
     {
         $this->setSettings(['app-public' => 'true']);
@@ -137,6 +154,19 @@ class UserPreferencesTest extends TestCase
             'preferences' => ['comment-replies' => 'true'],
         ]);
         $this->assertPermissionError($resp);
+    }
+
+    public function test_notification_comment_options_only_exist_if_comments_active()
+    {
+        $resp = $this->asEditor()->get('/preferences/notifications');
+        $resp->assertSee('Notify upon comments');
+        $resp->assertSee('Notify upon replies');
+
+        setting()->put('app-disable-comments', true);
+
+        $resp = $this->get('/preferences/notifications');
+        $resp->assertDontSee('Notify upon comments');
+        $resp->assertDontSee('Notify upon replies');
     }
 
     public function test_update_sort_preference()
@@ -223,6 +253,22 @@ class UserPreferencesTest extends TestCase
         $this->assertEquals(true, setting()->getForCurrentUser('dark-mode-enabled'));
         $home = $this->get('/login');
         $this->withHtml($home)->assertElementExists('.dark-mode');
+    }
+
+    public function test_dark_mode_toggle_endpoint_changes_to_light_when_dark_by_default()
+    {
+        config()->set('setting-defaults.user.dark-mode-enabled', true);
+        $editor = $this->users->editor();
+
+        $this->assertEquals(true, setting()->getUser($editor, 'dark-mode-enabled'));
+        $prefChange = $this->actingAs($editor)->patch('/preferences/toggle-dark-mode');
+        $prefChange->assertRedirect();
+        $this->assertEquals(false, setting()->getUser($editor, 'dark-mode-enabled'));
+
+        $home = $this->get('/');
+        $this->withHtml($home)->assertElementNotExists('.dark-mode');
+        $home->assertDontSee('Light Mode');
+        $home->assertSee('Dark Mode');
     }
 
     public function test_books_view_type_preferences_when_list()
