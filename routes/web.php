@@ -20,6 +20,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 Route::get('/status', [SettingControllers\StatusController::class, 'show']);
 Route::get('/robots.txt', [HomeController::class, 'robots']);
 Route::get('/favicon.ico', [HomeController::class, 'favicon']);
+Route::get('/manifest.json', [HomeController::class, 'pwaManifest']);
 
 // Authenticated routes...
 Route::middleware('auth')->group(function () {
@@ -142,6 +143,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/images/drawio', [UploadControllers\DrawioImageController::class, 'create']);
     Route::get('/images/edit/{id}', [UploadControllers\ImageController::class, 'edit']);
     Route::put('/images/{id}/file', [UploadControllers\ImageController::class, 'updateFile']);
+    Route::put('/images/{id}/rebuild-thumbnails', [UploadControllers\ImageController::class, 'rebuildThumbnails']);
     Route::put('/images/{id}', [UploadControllers\ImageController::class, 'update']);
     Route::delete('/images/{id}', [UploadControllers\ImageController::class, 'destroy']);
 

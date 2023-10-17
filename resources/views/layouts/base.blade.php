@@ -10,16 +10,15 @@
     <meta name="viewport" content="width=device-width">
     <meta name="token" content="{{ csrf_token() }}">
     <meta name="base-url" content="{{ url('/') }}">
-    <meta name="theme-color" content="{{ setting('app-color') }}"/>
+    <meta name="theme-color" content="{{(setting()->getForCurrentUser('dark-mode-enabled') ? setting('app-color-dark') : setting('app-color'))}}"/>
 
     <!-- Social Cards Meta -->
     <meta property="og:title" content="{{ isset($pageTitle) ? $pageTitle . ' | ' : '' }}{{ setting('app-name') }}">
     <meta property="og:url" content="{{ url()->current() }}">
     @stack('social-meta')
 
-    <!-- Styles and Fonts -->
+    <!-- Styles -->
     <link rel="stylesheet" href="{{ versioned_asset('dist/styles.css') }}">
-    <link rel="stylesheet" media="print" href="{{ versioned_asset('dist/print-styles.css') }}">
 
     <!-- Icons -->
     <link rel="icon" type="image/png" sizes="256x256" href="{{ setting('app-icon') ?: url('/icon.png') }}">
@@ -28,6 +27,10 @@
     <link rel="icon" type="image/png" sizes="128x128" href="{{ setting('app-icon-128') ?: url('/icon-128.png') }}">
     <link rel="icon" type="image/png" sizes="64x64" href="{{ setting('app-icon-64') ?: url('/icon-64.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ setting('app-icon-32') ?: url('/icon-32.png') }}">
+
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url('/manifest.json') }}" crossorigin="use-credentials">
+    <meta name="mobile-web-app-capable" content="yes">
 
     @yield('head')
 
