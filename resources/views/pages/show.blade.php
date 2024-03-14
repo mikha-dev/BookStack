@@ -129,7 +129,7 @@
                         </div>
                     @endif
                 </div>
-            @endif            
+            @endif
 
             @if($page->template)
                 <div class="entity-meta-item">
@@ -137,7 +137,7 @@
                     <div>{{ trans('entities.pages_is_template') }}</div>
                 </div>
             @endif
-    </div>
+        </div>
     </div>
 
     <div class="actions mb-xl">
@@ -191,9 +191,6 @@
             @if(!user()->isGuest())
                 @include('entities.favourite-action', ['entity' => $page])
             @endif
-            @if(userCan('page-update', $page))
-                @include('entities.publish-action', ['entity' => $page])
-            @endif            
             @if(userCan('content-export'))
                 @include('entities.export-menu', ['entity' => $page])
             @endif

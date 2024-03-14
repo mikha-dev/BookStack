@@ -5,8 +5,6 @@
  */
 return [
 
-    'published' => 'Published',
-    'unpublished' => 'Unpublished',
     // Shared
     'recently_created' => 'Recently Created',
     'recently_created_pages' => 'Recently Created Pages',
@@ -25,7 +23,7 @@ return [
     'meta_updated' => 'Updated :timeLength',
     'meta_updated_name' => 'Updated :timeLength by :user',
     'meta_owned_name' => 'Owned by :user',
-    'meta_reference_page_count' => 'Referenced on :count page|Referenced on :count pages',
+    'meta_reference_count' => 'Referenced by :count item|Referenced by :count items',
     'entity_select' => 'Entity Select',
     'entity_select_lack_permission' => 'You don\'t have the required permissions to select this item',
     'images' => 'Images',
@@ -41,6 +39,9 @@ return [
     'export_pdf' => 'PDF File',
     'export_text' => 'Plain Text File',
     'export_md' => 'Markdown File',
+    'default_template' => 'Default Page Template',
+    'default_template_explain' => 'Assign a page template that will be used as the default content for all pages created within this item. Keep in mind this will only be used if the page creator has view access to the chosen template page.',
+    'default_template_select' => 'Select a template page',
 
     // Permissions and restrictions
     'permissions' => 'Permissions',
@@ -82,8 +83,8 @@ return [
     'search_update' => 'Update Search',
 
     // Shelves
-    'shelf' => 'Product',
-    'shelves' => 'Products',
+    'shelf' => 'Shelf',
+    'shelves' => 'Shelves',
     'x_shelves' => ':count Shelf|:count Shelves',
     'shelves_empty' => 'No shelves have been created',
     'shelves_create' => 'Create New Shelf',
@@ -115,8 +116,8 @@ return [
     'shelves_copy_permission_success' => 'Shelf permissions copied to :count books',
 
     // Books
-    'book' => 'Article',
-    'books' => 'Articles',
+    'book' => 'Book',
+    'books' => 'Books',
     'x_books' => ':count Book|:count Books',
     'books_empty' => 'No books have been created',
     'books_popular' => 'Popular Books',
@@ -206,6 +207,7 @@ return [
     'pages_delete_draft' => 'Delete Draft Page',
     'pages_delete_success' => 'Page deleted',
     'pages_delete_draft_success' => 'Draft page deleted',
+    'pages_delete_warning_template' => 'This page is in active use as a book or chapter default page template. These books or chapters will no longer have a default page template assigned after this page is deleted.',
     'pages_delete_confirm' => 'Are you sure you want to delete this page?',
     'pages_delete_draft_confirm' => 'Are you sure you want to delete this draft page?',
     'pages_editing_named' => 'Editing Page :pageName',
@@ -407,7 +409,7 @@ return [
     // References
     'references' => 'References',
     'references_none' => 'There are no tracked references to this item.',
-    'references_to_desc' => 'Shown below are all the known pages in the system that link to this item.',
+    'references_to_desc' => 'Listed below is all the known content in the system that links to this item.',
 
     // Watch Options
     'watch' => 'Watch',

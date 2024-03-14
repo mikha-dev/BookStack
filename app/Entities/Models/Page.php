@@ -32,12 +32,10 @@ class Page extends BookChild
 {
     use HasFactory;
 
-    public static $listAttributes = ['name', 'id', 'slug', 'book_id', 'chapter_id', 'draft', 'template', 'text', 'created_at', 'updated_at', 'priority'];
-    public static $contentAttributes = ['name', 'id', 'slug', 'book_id', 'chapter_id', 'draft', 'template', 'html', 'text', 'created_at', 'updated_at', 'priority'];
-
     protected $fillable = ['name', 'priority'];
 
-    public $textField = 'text';
+    public string $textField = 'text';
+    public string $htmlField = 'html';
 
     protected $hidden = ['html', 'markdown', 'text', 'pivot', 'deleted_at'];
 
@@ -54,29 +52,6 @@ class Page extends BookChild
         $query = app()->make(PermissionApplicator::class)->restrictDraftsOnPageQuery($query);
 
         return parent::scopeVisible($query);
-    }
-
-    public function scopePublic(Builder $query): Builder
-    {
-        return $query->where('is_public', 1);
-    }    
-
-    public function isPublic() : bool {
-        return $this->is_public;
-    }
-
-    public function publish() : Page {
-        $this->is_public = 1;
-        $this->save();
-
-        return $this;
-    }
-
-    public function unpublish() : Page {
-        $this->is_public = 0;
-        $this->save();
-
-        return  $this;
     }
 
     /**
@@ -166,14 +141,5 @@ class Page extends BookChild
         $refreshed->html = (new PageContent($refreshed))->render();
 
         return $refreshed;
-    }
-
-    /**
-     * Get a visible page by its book and page slugs.
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     */
-    public static function getBySlugs(string $bookSlug, string $pageSlug): self
-    {
-        return static::visible()->whereSlugs($bookSlug, $pageSlug)->firstOrFail();
     }
 }

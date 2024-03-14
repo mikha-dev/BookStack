@@ -54,10 +54,6 @@ return [
     'revision_delete' => 'deleted revision',
     'revision_delete_notification' => 'Revision successfully deleted',
 
-    // Publish
-    'published_notification' => '":name" has been published',
-    'unpublish_notification' => '":name" has been unpublished',
-
     // Favourites
     'favourite_add_notification' => '":name" has been added to your favourites',
     'favourite_remove_notification' => '":name" has been removed from your favourites',
@@ -97,11 +93,11 @@ return [
     'user_delete_notification' => 'User successfully removed',
 
     // API Tokens
-    'api_token_create' => 'created api token',
+    'api_token_create' => 'created API token',
     'api_token_create_notification' => 'API token successfully created',
-    'api_token_update' => 'updated api token',
+    'api_token_update' => 'updated API token',
     'api_token_update_notification' => 'API token successfully updated',
-    'api_token_delete' => 'deleted api token',
+    'api_token_delete' => 'deleted API token',
     'api_token_delete_notification' => 'API token successfully deleted',
 
     // Roles
